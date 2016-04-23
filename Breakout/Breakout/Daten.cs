@@ -9,13 +9,17 @@ namespace Breakout
 {
     public class Block : Label
     {
-        public bool Unten { get; set; }
-        public bool Oben { get; set; }
-        public bool Links { get; set; }
-        public bool Rechts { get; set; }
+        public bool bottom { get; set; }
+        public bool top { get; set; }
+        public bool left { get; set; }
+        public bool right { get; set; }
 
     }
 
+    public class Player : Label
+    {
+        public float Speed { get; set; }
+    }
 
     class Daten
     {
