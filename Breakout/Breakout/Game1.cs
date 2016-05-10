@@ -12,6 +12,11 @@ namespace Breakout
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        Texture2D background;
+        Texture2D player;
+
+        Vector2 playerPos;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -28,6 +33,8 @@ namespace Breakout
         {
             // TODO: Add your initialization logic here
 
+
+
             base.Initialize();
         }
 
@@ -39,6 +46,12 @@ namespace Breakout
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+
+            background = Content.Load<Texture2D>("Background\\galaxy");
+            player = Content.Load<Texture2D>("Background\\player");
+
+            playerPos = new Vector2(graphics.GraphicsDevice.Viewport.Width / 2 - player.Width / 2, graphics.GraphicsDevice.Viewport.Height - player.Height - 10);
 
             // TODO: use this.Content to load your game content here
         }
@@ -62,7 +75,16 @@ namespace Breakout
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            if (Keyboard.GetState().IsKeyDown(Keys.A))
+            {
+                playerPos.X -= 5;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.D))
+            {
+                playerPos.X += 5;
+            }
+
 
             base.Update(gameTime);
         }
@@ -76,6 +98,12 @@ namespace Breakout
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+            spriteBatch.Draw(background, new Rectangle(0, 0, graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height), Color.White);
+            spriteBatch.Draw(player, playerPos, Color.White);
+            spriteBatch.End();
+
+
 
             base.Draw(gameTime);
         }
