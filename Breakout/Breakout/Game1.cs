@@ -12,10 +12,10 @@ namespace Breakout
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        Texture2D background;
-        Texture2D player;
+        Texture2D backgroundTex;
 
-        Vector2 playerPos;
+        private Ball ball;
+        private Player player;
 
         public Game1()
         {
@@ -33,7 +33,8 @@ namespace Breakout
         {
             // TODO: Add your initialization logic here
 
-
+            ball = new Ball();
+            player = new Player();
 
             base.Initialize();
         }
@@ -48,11 +49,18 @@ namespace Breakout
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
 
-            background = Content.Load<Texture2D>("Background\\galaxy");
-            player = Content.Load<Texture2D>("Background\\player");
+            backgroundTex = Content.Load<Texture2D>("Background\\galaxy");
 
-            playerPos = new Vector2(graphics.GraphicsDevice.Viewport.Width / 2 - player.Width / 2, graphics.GraphicsDevice.Viewport.Height - player.Height - 10);
+            player.Texture = Content.Load<Texture2D>("Background\\player");
+            ball.Texture = Content.Load<Texture2D>("Background\\ball");
 
+            player.Position = new Vector2(ClientSize().X / 2 - player.Width / 2, ClientSize().Y - player.Height - 10);
+            ball.Position = new Vector2(ClientSize().X / 2, ClientSize().Y / 2);
+
+            ball.SpeedX = 2;
+            ball.SpeedY = 2;
+
+            player.Speed = 5;
             // TODO: use this.Content to load your game content here
         }
 
@@ -72,19 +80,13 @@ namespace Breakout
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            ball = CalcBall(ball);
+            player = CalcPlayer(player);
+
+
+            // Userinput
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-            {
-                playerPos.X -= 5;
-            }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-            {
-                playerPos.X += 5;
-            }
-
 
             base.Update(gameTime);
         }
@@ -97,15 +99,74 @@ namespace Breakout
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
+            // Drawing
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-            spriteBatch.Draw(background, new Rectangle(0, 0, graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height), Color.White);
-            spriteBatch.Draw(player, playerPos, Color.White);
+            spriteBatch.Draw(backgroundTex, new Rectangle(0, 0, graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height), Color.White);
+            spriteBatch.Draw(player.Texture, player.Position, Color.White);
+            spriteBatch.Draw(ball.Texture, ball.Position, Color.White);
             spriteBatch.End();
 
-
-
             base.Draw(gameTime);
+        }
+
+        /// <summary>
+        /// Ball Logik / Physik
+        /// </summary>
+        /// <param name="_ball">Ball an dem díe Logik berechnet werden soll</param>
+        /// <returns>Ball an dem die Logik berechnet wurde</returns>
+        private Ball CalcBall(Ball _ball)
+        {
+            Vector2 nextPosition = new Vector2(_ball.Position.X + _ball.SpeedX, _ball.Position.Y + _ball.SpeedY);
+
+            if (nextPosition.X < 0 || nextPosition.X > ClientSize().X - _ball.Width)
+                _ball.SpeedX *= -1;
+
+            if (nextPosition.Y < 0 || nextPosition.Y > player.Position.Y - _ball.Height)
+                _ball.SpeedY *= -1;
+
+
+            _ball.Position = new Vector2(_ball.Position.X + _ball.SpeedX, _ball.Position.Y + _ball.SpeedY);
+            return _ball;
+        }
+
+        /// <summary>
+        /// Player Logik / Physik
+        /// </summary>
+        /// <param name="_player">Player an dem die Logik berechnet werden soll</param>
+        /// <returns>Player an dem die Logik berechnet wurde</returns>
+        private Player CalcPlayer(Player _player)
+        {
+            Vector2 nextPosition = _player.Position;
+
+            if (Keyboard.GetState().IsKeyDown(Keys.A))
+            {
+                nextPosition = new Vector2(player.Position.X - _player.Speed, player.Position.Y);
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.D))
+            {
+                nextPosition = new Vector2(player.Position.X + _player.Speed, player.Position.Y);
+            }
+
+            if (nextPosition.X < 0 || nextPosition.X > ClientSize().X - _player.Width)
+            {
+                // out of view
+            }
+            else
+            {
+                _player.Position = nextPosition;
+            }
+
+            return _player;
+        }
+
+        /// <summary>
+        /// Die Client Groesse
+        /// </summary>
+        /// <returns>Point X=Width, Y=Height</returns>
+        private Point ClientSize()
+        {
+            return new Point(graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height);
         }
     }
 }
